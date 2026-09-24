@@ -174,6 +174,15 @@ def test_png(test_images, tmp_path):
         im = imageio.imread(fnamebase + ".png", format="PNG-PIL")
         assert im.dtype == dtype
 
+    # issue #624 - an uint8 input keeps its dtype whatever prefer_uint8 says:
+    # the flag is about not narrowing wider dtypes, not about widening uint8
+    arr8 = np.array([[0, 1, 2], [0, 255, 200]], dtype=np.uint8)
+    for preference in ({}, {"prefer_uint8": True}, {"prefer_uint8": False}):
+        imageio.imwrite(fnamebase + ".png", arr8, **preference, format="PNG-PIL")
+        im = imageio.imread(fnamebase + ".png", format="PNG-PIL")
+        assert im.dtype == np.uint8
+        assert np.array_equal(im, arr8)
+
 
 @pytest.mark.needs_internet
 @deprecated_test

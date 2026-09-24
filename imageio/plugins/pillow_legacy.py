@@ -794,6 +794,13 @@ def ndarray_to_pil(arr, format_str=None, prefer_uint8=True):
         if arr.dtype.kind == "f":
             arr = image_as_uint(arr)
 
+        elif arr.dtype == np.uint8:
+            # uint8 input is already at the depth the PNG writer wants;
+            # prefer_uint8 only decides whether wider integer arrays whose
+            # values happen to fit in [0, 255] may be narrowed (see #352).
+            # Widening here would rescale every value by 257 instead (see #624).
+            mode = mode_base = "L"
+
         elif prefer_uint8 and arr.max() < 256 and arr.min() >= 0:
             arr = arr.astype(np.uint8)
             mode = mode_base = "L"
